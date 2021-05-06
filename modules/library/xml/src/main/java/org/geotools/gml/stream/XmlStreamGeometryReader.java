@@ -18,8 +18,8 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -45,15 +45,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class XmlStreamGeometryReader {
 
-    private final GeometryFactory geomFac;
-
     private final XMLStreamReader reader;
+
+    private GeometryFactory geomFac;
 
     private boolean unsafeXMLAllowed = false;
 
-    private final CRS.AxisOrder axisOrder;
+    private Predicate<CoordinateReferenceSystem> invertAxisNeeded = null;
 
-    private AxisOrderInversionChecker axisOrderInversionChecker = null;
+    private final Map<CoordinateReferenceSystem, Boolean> invertAxisNeededCache = new HashMap<>();
 
     /* This is copied from org.geotools.gml3.GML from the xsd-gml3 module, which is not a dependency of gt-xml.
      * Only the elements referenced in this parser are present
@@ -123,13 +123,17 @@ public class XmlStreamGeometryReader {
                 new QName("http://www.opengis.net/gml", "surfaceMembers");
     }
 
-    public XmlStreamGeometryReader(
-            final GeometryFactory geomFac,
-            final XMLStreamReader reader,
-            final CRS.AxisOrder axisOrder) {
+    public XmlStreamGeometryReader(final GeometryFactory geomFac, final XMLStreamReader reader) {
         this.geomFac = geomFac;
         this.reader = reader;
-        this.axisOrder = axisOrder;
+    }
+
+    public void setGeometryFactory(GeometryFactory geomFac) {
+        this.geomFac = geomFac;
+    }
+
+    public GeometryFactory getGeometryFactory() {
+        return geomFac;
     }
 
     public boolean isUnsafeXMLAllowed() {
@@ -144,8 +148,12 @@ public class XmlStreamGeometryReader {
         this.unsafeXMLAllowed = unsafeXMLAllowed;
     }
 
-    public void setAxisOrderInversionChecker(AxisOrderInversionChecker axisOrderInversionChecker) {
-        this.axisOrderInversionChecker = axisOrderInversionChecker;
+    /**
+     * Provide a predicate that determines whether axis need to be inverted for a CRS, only called
+     * once per CRS. By default axis are not inverted.
+     */
+    public void setInvertAxisNeeded(Predicate<CoordinateReferenceSystem> invertAxisNeeded) {
+        this.invertAxisNeeded = invertAxisNeeded;
     }
 
     /**
@@ -721,7 +729,7 @@ public class XmlStreamGeometryReader {
                             + ") does not match crs dimension: "
                             + dimension);
         }
-        boolean invertXY = this.invertAxisNeeded(crs);
+        boolean invertXY = this.checkInvertAxisNeededCache(crs);
         final int nCoords = ordinatesLength / dimension;
         Coordinate[] coords = new Coordinate[nCoords];
         Coordinate coord;
@@ -750,13 +758,17 @@ public class XmlStreamGeometryReader {
         return coords;
     }
 
-    private boolean invertAxisNeeded(final CoordinateReferenceSystem crs) {
-        // TODO: cache result
-        if (this.axisOrderInversionChecker != null) {
-            return this.axisOrderInversionChecker.invertAxisNeeded(this.axisOrder, crs);
-        } else {
+    private boolean checkInvertAxisNeededCache(final CoordinateReferenceSystem crs) {
+        if (invertAxisNeeded == null) {
             return false;
         }
+
+        Boolean invert = invertAxisNeededCache.get(crs);
+        if (invert == null) {
+            invert = this.invertAxisNeeded.test(crs);
+            invertAxisNeededCache.put(crs, invert);
+        }
+        return invert;
     }
 
     private Coordinate[] toCoordList(
@@ -776,7 +788,7 @@ public class XmlStreamGeometryReader {
         Coordinate[] coords = new Coordinate[nCoords];
         Coordinate coord;
 
-        boolean invertXY = this.invertAxisNeeded(crs);
+        boolean invertXY = this.checkInvertAxisNeededCache(crs);
 
         double x, y, z;
 
