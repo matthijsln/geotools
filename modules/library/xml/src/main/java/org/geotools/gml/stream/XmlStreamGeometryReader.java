@@ -25,7 +25,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.geotools.geometry.jts.MultiCurve;
-
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.locationtech.jts.geom.Coordinate;
@@ -41,7 +40,8 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Parse GML from a StAX XMLStreamReader. Code migrated from the XmlSimpleFeatureParser class from wfs-ng.
+ * Parse GML from a StAX XMLStreamReader. Code migrated from the XmlSimpleFeatureParser class from
+ * wfs-ng.
  */
 public class XmlStreamGeometryReader {
 
@@ -93,11 +93,9 @@ public class XmlStreamGeometryReader {
 
         static final QName MultiPoint = new QName("http://www.opengis.net/gml", "MultiPoint");
 
-        static final QName MultiPolygon =
-                new QName("http://www.opengis.net/gml", "MultiPolygon");
+        static final QName MultiPolygon = new QName("http://www.opengis.net/gml", "MultiPolygon");
 
-        static final QName MultiSurface =
-                new QName("http://www.opengis.net/gml", "MultiSurface");
+        static final QName MultiSurface = new QName("http://www.opengis.net/gml", "MultiSurface");
 
         static final QName OrientableCurve =
                 new QName("http://www.opengis.net/gml", "OrientableCurve");
@@ -109,20 +107,17 @@ public class XmlStreamGeometryReader {
 
         static final QName pointMember = new QName("http://www.opengis.net/gml", "pointMember");
 
-        static final QName pointMembers =
-                new QName("http://www.opengis.net/gml", "pointMembers");
+        static final QName pointMembers = new QName("http://www.opengis.net/gml", "pointMembers");
 
         static final QName Polygon = new QName("http://www.opengis.net/gml", "Polygon");
 
-        static final QName polygonMember =
-                new QName("http://www.opengis.net/gml", "polygonMember");
+        static final QName polygonMember = new QName("http://www.opengis.net/gml", "polygonMember");
 
         static final QName pos = new QName("http://www.opengis.net/gml", "pos");
 
         static final QName posList = new QName("http://www.opengis.net/gml", "posList");
 
-        static final QName surfaceMember =
-                new QName("http://www.opengis.net/gml", "surfaceMember");
+        static final QName surfaceMember = new QName("http://www.opengis.net/gml", "surfaceMember");
 
         static final QName surfaceMembers =
                 new QName("http://www.opengis.net/gml", "surfaceMembers");
@@ -142,8 +137,8 @@ public class XmlStreamGeometryReader {
     }
 
     /**
-     * @param unsafeXMLAllowed true if you want to parse from an XMLStreamReader not configured for safe XML parsing
-     *                         (XMLInputFactory.SUPPORT_DTD is true)
+     * @param unsafeXMLAllowed true if you want to parse from an XMLStreamReader not configured for
+     *     safe XML parsing (XMLInputFactory.SUPPORT_DTD is true)
      */
     public void setUnsafeXMLAllowed(boolean unsafeXMLAllowed) {
         this.unsafeXMLAllowed = unsafeXMLAllowed;
